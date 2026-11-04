@@ -35,11 +35,15 @@
         <h2>STOCK BALANCE CALCULATOR</h2>
     </header>
 
-    <main id="calculatorSection">
-<!-- USER LOGOUT BUTTON -->
-<button type="button" id="logoutBtn">
+   <main id="calculatorSection">
+<!-- USER LOGOUT BUTTON - HIDDEN -->
+<button type="button" id="logoutBtn" style="display: none;">
     LOGOUT
 </button>
+<!-- STOCK DASHBOARD LAYOUT -->
+<div class="stock-dashboard">
+
+    <div class="model-column">
         <!-- BEZZA SECTION -->
         <h2>BEZZA STOCK</h2>
 
@@ -93,7 +97,9 @@
                 <span id="rwsTotal">0</span>
             </h4>
         </section>
+    </div>
 
+    <div class="model-column">
         <!-- ARUZ SECTION -->
         <h2>ARUZ STOCK</h2>
 
@@ -147,6 +153,10 @@
                 <span id="aruzRwsTotal">0</span>
             </h4>
         </section>
+    </div>
+
+</div>
+<!-- END STOCK DASHBOARD LAYOUT -->
 
         <!-- STOCK SUMMARY -->
         <section class="summary">
