@@ -1,0 +1,206 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>SHJ AUTO - Stock Balance Calculator</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <h1>SHJ AUTO</h1>
+        <h2>STOCK BALANCE CALCULATOR</h2>
+    </header>
+
+    <main>
+
+        <!-- BEZZA SECTION -->
+        <h2>BEZZA STOCK</h2>
+
+        <!-- BEZZA STD -->
+        <section class="stock-card">
+            <h3>BEZZA STD</h3>
+
+            <label for="stdMain">Main Store</label>
+            <input type="number" id="stdMain"
+                   min="0" step="1" placeholder="0">
+
+            <label for="stdSub">Sub Store</label>
+            <input type="number" id="stdSub"
+                   min="0" step="1" placeholder="0">
+
+            <h4>Total Stock:
+                <span id="stdTotal">0</span>
+            </h4>
+        </section>
+
+        <!-- BEZZA ADV -->
+        <section class="stock-card">
+            <h3>BEZZA ADV</h3>
+
+            <label for="advMain">Main Store</label>
+            <input type="number" id="advMain"
+                   min="0" step="1" placeholder="0">
+
+            <label for="advSub">Sub Store</label>
+            <input type="number" id="advSub"
+                   min="0" step="1" placeholder="0">
+
+            <h4>Total Stock:
+                <span id="advTotal">0</span>
+            </h4>
+        </section>
+
+        <!-- BEZZA RWS -->
+        <section class="stock-card">
+            <h3>BEZZA RWS</h3>
+
+            <label for="rwsMain">Main Store</label>
+            <input type="number" id="rwsMain"
+                   min="0" step="1" placeholder="0">
+
+            <label for="rwsSub">Sub Store</label>
+            <input type="number" id="rwsSub"
+                   min="0" step="1" placeholder="0">
+
+            <h4>Total Stock:
+                <span id="rwsTotal">0</span>
+            </h4>
+        </section>
+
+        <!-- ARUZ SECTION -->
+        <h2>ARUZ STOCK</h2>
+
+        <!-- ARUZ STD -->
+        <section class="stock-card">
+            <h3>ARUZ STD</h3>
+
+            <label for="aruzStdMain">Main Store</label>
+            <input type="number" id="aruzStdMain"
+                   min="0" step="1" placeholder="0">
+
+            <label for="aruzStdSub">Sub Store</label>
+            <input type="number" id="aruzStdSub"
+                   min="0" step="1" placeholder="0">
+
+            <h4>Total Stock:
+                <span id="aruzStdTotal">0</span>
+            </h4>
+        </section>
+
+        <!-- ARUZ ADV -->
+        <section class="stock-card">
+            <h3>ARUZ ADV</h3>
+
+            <label for="aruzAdvMain">Main Store</label>
+            <input type="number" id="aruzAdvMain"
+                   min="0" step="1" placeholder="0">
+
+            <label for="aruzAdvSub">Sub Store</label>
+            <input type="number" id="aruzAdvSub"
+                   min="0" step="1" placeholder="0">
+
+            <h4>Total Stock:
+                <span id="aruzAdvTotal">0</span>
+            </h4>
+        </section>
+
+        <!-- ARUZ RWS -->
+        <section class="stock-card">
+            <h3>ARUZ RWS</h3>
+
+            <label for="aruzRwsMain">Main Store</label>
+            <input type="number" id="aruzRwsMain"
+                   min="0" step="1" placeholder="0">
+
+            <label for="aruzRwsSub">Sub Store</label>
+            <input type="number" id="aruzRwsSub"
+                   min="0" step="1" placeholder="0">
+
+            <h4>Total Stock:
+                <span id="aruzRwsTotal">0</span>
+            </h4>
+        </section>
+
+        <!-- STOCK SUMMARY -->
+        <section class="summary">
+
+            <h2>STOCK SUMMARY</h2>
+
+            <p>
+                Total Main Store:
+                <span id="totalMain">0</span>
+            </p>
+
+            <p>
+                Total Sub Store:
+                <span id="totalSub">0</span>
+            </p>
+
+            <h2>
+                GRAND TOTAL:
+                <span id="grandTotal">0</span>
+            </h2>
+
+        </section>
+
+<!-- SAVE STOCK BUTTON -->
+<button id="saveBtn" type="button">
+    💾 SAVE STOCK
+</button>
+
+<!-- RESET BUTTON -->
+<button id="resetBtn" type="button">
+    RESET STOCK
+</button>
+
+<!-- STOCK HISTORY -->
+<section class="history-section">
+    <h2>STOCK HISTORY</h2>
+
+<!-- SEARCH STOCK HISTORY BY DATE -->
+<div class="history-search">
+
+    <label for="searchDate">
+        SELECT RECORD DATE
+    </label>
+
+    <input
+        type="date"
+        id="searchDate"
+    >
+
+    <button id="searchBtn" type="button">
+        🔍 SEARCH RECORD
+    </button>
+
+    <button id="showAllBtn" type="button">
+        SHOW ALL RECORDS
+    </button>
+
+</div>
+
+    <button id="historyBtn" type="button">
+        VIEW SAVED RECORDS
+    </button>
+
+    <div id="stockHistory">
+        <p>Click the button to view saved records.</p>
+    </div>
+</section>
+
+    </main>
+
+    <!-- JAVASCRIPT -->
+    <script src="script.js"></script>
+
+</body>
+</html>
