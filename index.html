@@ -13,15 +13,33 @@
 </head>
 
 <body>
+<!-- USER LOGIN SECTION -->
+<section id="loginSection">
+    <h2>SHJ AUTO - USER LOGIN</h2>
 
+    <input type="email" id="loginEmail"
+           placeholder="Enter Email">
+
+    <input type="password" id="loginPassword"
+           placeholder="Enter Password">
+
+    <button type="button" id="loginBtn">
+        LOGIN
+    </button>
+
+    <p id="loginMessage"></p>
+</section>
     <!-- HEADER -->
     <header>
         <h1>SHJ AUTO</h1>
         <h2>STOCK BALANCE CALCULATOR</h2>
     </header>
 
-    <main>
-
+    <main id="calculatorSection" style="display: none;">
+<!-- USER LOGOUT BUTTON -->
+<button type="button" id="logoutBtn">
+    LOGOUT
+</button>
         <!-- BEZZA SECTION -->
         <h2>BEZZA STOCK</h2>
 
@@ -200,6 +218,7 @@
     </main>
 
     <!-- JAVASCRIPT -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script src="script.js"></script>
 
 </body>
