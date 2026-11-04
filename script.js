@@ -1,6 +1,148 @@
 
 document.addEventListener("DOMContentLoaded", function () {
+    // =====================================
+    // SUPABASE CONFIGURATION
+    // =====================================
 
+   const SUPABASE_URL = "https://gzsgzbvtshacfxwcgina.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ST6rVAjuO96tPDx5AIMhCw_aCuq7Z2U";
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+);
+
+console.log("Supabase client initialized successfully!");
+
+    // =====================================
+    // CHECK EXISTING LOGIN SESSION
+    // =====================================
+
+    async function checkLoginSession() {
+        const { data, error } = await supabaseClient.auth.getUser();
+
+        const loginSection = document.getElementById("loginSection");
+        const calculatorSection = document.getElementById("calculatorSection");
+
+        if (!error && data.user) {
+            loginSection.style.display = "none";
+            calculatorSection.style.display = "block";
+
+            console.log("Existing login session found.");
+        } else {
+            loginSection.style.display = "block";
+            calculatorSection.style.display = "none";
+
+            console.log("User not logged in.");
+        }
+    }
+
+    checkLoginSession();
+
+    // =====================================
+    // SUPABASE USER LOGOUT
+    // =====================================
+
+    document.getElementById("logoutBtn").addEventListener("click", async function () {
+
+        const { error } = await supabaseClient.auth.signOut();
+
+        if (error) {
+            alert("Logout failed: " + error.message);
+            return;
+        }
+
+        document.getElementById("calculatorSection").style.display = "none";
+        document.getElementById("loginSection").style.display = "block";
+
+        document.getElementById("loginEmail").value = "";
+        document.getElementById("loginPassword").value = "";
+
+        console.log("Supabase Logout SUCCESS!");
+    });
+
+    // =====================================
+    // SUPABASE USER LOGIN
+    // =====================================
+
+    const loginBtn = document.getElementById("loginBtn");
+    const loginMessage = document.getElementById("loginMessage");
+    const loginSection = document.getElementById("loginSection");
+    const calculatorSection = document.getElementById("calculatorSection");
+
+    loginBtn.addEventListener("click", async function () {
+
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value;
+
+        if (!email || !password) {
+            loginMessage.textContent = "Please enter email and password.";
+            return;
+        }
+
+        loginBtn.disabled = true;
+        loginMessage.textContent = "Logging in...";
+
+        try {
+            const { data, error } =
+                await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+            if (error) {
+                throw error;
+            }
+
+            if (data.user) {
+                loginSection.style.display = "none";
+                calculatorSection.style.display = "block";
+
+                document.getElementById("loginPassword").value = "";
+                loginMessage.textContent = "";
+
+                console.log("Supabase Login SUCCESS!");
+            }
+
+        } catch (error) {
+            loginMessage.textContent = "Login failed: " + error.message;
+            console.error("Login error:", error);
+        } finally {
+            loginBtn.disabled = false;
+        }
+    });
+
+// =====================================
+// TEST SUPABASE DATABASE CONNECTION
+// =====================================
+
+async function testSupabaseConnection() {
+    try {
+        const { data, error } = await supabaseClient
+            .from("stock_records")
+            .select("id")
+            .limit(1);
+
+        if (error) {
+            console.error("Supabase Database Error:", error.message);
+            return;
+        }
+
+        console.log("Supabase Database Connection SUCCESS!");
+        console.log("Test Data:", data);
+
+    } catch (error) {
+        console.error("Connection Failed:", error);
+    }
+}
+
+testSupabaseConnection();
+supabaseClient.auth.getUser().then(function ({ data, error }) {
+    if (error || !data.user) {
+        console.log("Authentication Status: NOT LOGGED IN");
+    } else {
+        console.log("Authentication Status: LOGGED IN");
+    }
+});
     // =====================================
     // SHJ AUTO STOCK BALANCE CALCULATOR
     // =====================================
@@ -102,17 +244,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 
+   
     // =====================================
-    // SAVE STOCK RECORD
+    // SAVE STOCK RECORD - SUPABASE
     // =====================================
 
     document.getElementById("saveBtn")
-        .addEventListener("click", function () {
+        .addEventListener("click", async function () {
 
             const now = new Date();
 
             const stockData = {
-                id: now.getTime(),
                 dateTime: now.toLocaleString("en-MY"),
                 stocks: [],
                 totalMain: 0,
@@ -123,14 +265,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // COLLECT ALL VARIANT STOCK
             variants.forEach(function (variant) {
 
-                const main = getStock(
-                    variant + "Main"
-                );
-
-                const sub = getStock(
-                    variant + "Sub"
-                );
-
+                const main = getStock(variant + "Main");
+                const sub = getStock(variant + "Sub");
                 const total = main + sub;
 
                 stockData.stocks.push({
@@ -145,39 +281,45 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             stockData.grandTotal =
-                stockData.totalMain +
-                stockData.totalSub;
+                stockData.totalMain + stockData.totalSub;
 
-            // SAVE TO LOCAL STORAGE
+            // SAVE TO SUPABASE
             try {
 
-                const records = JSON.parse(
-                    localStorage.getItem(
-                        "shjStockRecords"
-                    ) || "[]"
-                );
+                const { data: authData, error: authError } =
+                    await supabaseClient.auth.getUser();
 
-                records.push(stockData);
+                if (authError || !authData.user) {
+                    throw new Error("Please login first.");
+                }
 
-                localStorage.setItem(
-                    "shjStockRecords",
-                    JSON.stringify(records)
-                );
+                const { error } = await supabaseClient
+                    .from("stock_records")
+                    .insert([{
+                        date_time: stockData.dateTime,
+                        stocks: stockData.stocks,
+                        total_main: stockData.totalMain,
+                        total_sub: stockData.totalSub,
+                        grand_total: stockData.grandTotal
+                    }]);
+
+                if (error) {
+                    throw error;
+                }
 
                 alert(
-                    "STOCK SAVED SUCCESSFULLY!\n\n" +
+                    "STOCK SAVED TO SUPABASE SUCCESSFULLY!\n\n" +
                     "Date: " + stockData.dateTime + "\n" +
                     "Main Store: " + stockData.totalMain + "\n" +
                     "Sub Store: " + stockData.totalSub + "\n" +
                     "Grand Total: " + stockData.grandTotal
                 );
 
+                console.log("Stock saved to Supabase!");
+
             } catch (error) {
 
-                console.error(
-                    "Stock saving error:",
-                    error
-                );
+                console.error("Stock saving error:", error);
 
                 alert(
                     "ERROR SAVING STOCK!\n" +
@@ -215,88 +357,108 @@ document.addEventListener("DOMContentLoaded", function () {
     // VIEW STOCK HISTORY
     // =====================================
 
+   
+    // =====================================
+    // STOCK HISTORY - SUPABASE
+    // =====================================
+
     document.getElementById("historyBtn")
-        .addEventListener("click", function () {
+        .addEventListener("click", async function () {
 
             const historyDiv =
                 document.getElementById("stockHistory");
 
-            let records;
+            historyDiv.textContent = "Loading stock records...";
 
             try {
-                records = JSON.parse(
-                    localStorage.getItem("shjStockRecords") || "[]"
-                );
 
-                if (!Array.isArray(records)) {
-                    throw new Error("Invalid record format");
+                const { data: authData, error: authError } =
+                    await supabaseClient.auth.getUser();
+
+                if (authError || !authData.user) {
+                    throw new Error("Please login first.");
                 }
 
-            } catch (error) {
-                historyDiv.textContent =
-                    "Unable to load saved records.";
-                return;
-            }
+                const { data, error } = await supabaseClient
+                    .from("stock_records")
+                    .select("*")
+                    .order("created_at", { ascending: false });
 
-            historyDiv.innerHTML = "";
+                if (error) {
+                    throw error;
+                }
 
-            if (records.length === 0) {
-                historyDiv.textContent =
-                    "No saved stock records found.";
-                return;
-            }
+                historyDiv.innerHTML = "";
 
-            // Show newest records first
-            records.reverse().forEach(function (record, index) {
+                if (!data || data.length === 0) {
+                    historyDiv.textContent =
+                        "No saved stock records found.";
+                    return;
+                }
 
-                const card = document.createElement("div");
-                card.className = "history-card";
+                data.forEach(function (record, index) {
 
-                const heading = document.createElement("h3");
-                heading.textContent =
-                    "Record " + (records.length - index) +
-                    " — " + record.dateTime;
+                    const card = document.createElement("div");
+                    card.className = "history-card";
 
-                card.appendChild(heading);
+                    const heading = document.createElement("h3");
+                    heading.textContent =
+                        "Record " + (data.length - index) +
+                        " — " + record.date_time;
 
-                const table = document.createElement("table");
+                    card.appendChild(heading);
 
-                const headerRow = table.insertRow();
+                    const table = document.createElement("table");
+                    const headerRow = table.insertRow();
 
-                ["Variant", "Main", "Sub", "Total"]
-                    .forEach(function (name) {
-                        const th = document.createElement("th");
-                        th.textContent = name;
-                        headerRow.appendChild(th);
+                    ["Variant", "Main", "Sub", "Total"]
+                        .forEach(function (name) {
+                            const th = document.createElement("th");
+                            th.textContent = name;
+                            headerRow.appendChild(th);
+                        });
+
+                    (record.stocks || []).forEach(function (stock) {
+
+                        const row = table.insertRow();
+
+                        [
+                            stock.variant,
+                            stock.mainStore,
+                            stock.subStore,
+                            stock.total
+                        ].forEach(function (value) {
+                            const cell = row.insertCell();
+                            cell.textContent = value;
+                        });
+
                     });
 
-                (record.stocks || []).forEach(function (stock) {
+                    card.appendChild(table);
 
-                    const row = table.insertRow();
+                    const total = document.createElement("p");
+                    total.textContent =
+                        "GRAND TOTAL: " + record.grand_total;
 
-                    [
-                        stock.variant,
-                        stock.mainStore,
-                        stock.subStore,
-                        stock.total
-                    ].forEach(function (value) {
-                        const cell = row.insertCell();
-                        cell.textContent = value;
-                    });
+                    total.style.fontWeight = "bold";
+                    card.appendChild(total);
 
+                    historyDiv.appendChild(card);
                 });
 
-                card.appendChild(table);
+                console.log(
+                    "Stock history loaded from Supabase:",
+                    data.length,
+                    "records"
+                );
 
-                const total = document.createElement("p");
-                total.textContent =
-                    "GRAND TOTAL: " + record.grandTotal;
+            } catch (error) {
 
-                total.style.fontWeight = "bold";
-                card.appendChild(total);
+                console.error("Stock history error:", error);
 
-                historyDiv.appendChild(card);
-            });
+                historyDiv.textContent =
+                    "Unable to load records: " + error.message;
+            }
 
         });
 
@@ -319,6 +481,46 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Display records in the history section
+
+    // =====================================
+    // LOAD STOCK RECORDS FROM SUPABASE
+    // =====================================
+
+    async function getSupabaseRecords() {
+
+        const { data: authData, error: authError } =
+            await supabaseClient.auth.getUser();
+
+        if (authError || !authData.user) {
+            throw new Error("Please login first.");
+        }
+
+        const { data, error } = await supabaseClient
+            .from("stock_records")
+            .select("*")
+            .order("created_at", { ascending: true });
+
+        if (error) {
+            throw error;
+        }
+
+        // Convert Supabase column names
+        // to existing JavaScript format
+        return (data || []).map(function (record) {
+
+            return {
+                id: record.id,
+                dateTime: record.date_time,
+                savedAt: record.created_at,
+                stocks: record.stocks || [],
+                totalMain: record.total_main,
+                totalSub: record.total_sub,
+                grandTotal: record.grand_total
+            };
+
+        });
+    }
+
     function displaySearchResults(records) {
 
         const historyDiv =
@@ -443,48 +645,18 @@ editBtn.addEventListener("click", function () {
     updateBtn.className = "update-record-btn";
 
    
-updateBtn.addEventListener("click", function () {
 
-    // Get all saved records
-    let savedRecords;
+updateBtn.addEventListener("click", async function () {
 
-    try {
-        savedRecords = JSON.parse(
-            localStorage.getItem("shjStockRecords") || "[]"
-        );
-
-        if (!Array.isArray(savedRecords)) {
-            throw new Error("Invalid stock records");
-        }
-    } catch (error) {
-        alert("Unable to load saved records.");
-        return;
-    }
-
-    // Find the original record using its ID
-    const recordIndex = savedRecords.findIndex(function (item) {
-        return item.id === record.id;
+    const updatedStocks = (record.stocks || []).map(function (stock) {
+        return { ...stock };
     });
 
-    if (recordIndex === -1) {
-        alert("Original record not found.");
-        return;
-    }
-
-    // Copy original stock data
-    const updatedStocks = savedRecords[recordIndex].stocks.map(
-        function (stock) {
-            return { ...stock };
-        }
-    );
-
-    // Read and validate edited quantities
     const editInputs = editForm.querySelectorAll(
         "input[data-stock-index]"
     );
 
     for (const input of editInputs) {
-
         const value = Number(input.value);
 
         if (
@@ -503,14 +675,11 @@ updateBtn.addEventListener("click", function () {
         updatedStocks[index][field] = value;
     }
 
-    // Recalculate totals for each variant
     let totalMain = 0;
     let totalSub = 0;
 
     updatedStocks.forEach(function (stock) {
-
         stock.total = stock.mainStore + stock.subStore;
-
         totalMain += stock.mainStore;
         totalSub += stock.subStore;
     });
@@ -521,37 +690,54 @@ updateBtn.addEventListener("click", function () {
         return;
     }
 
-    // Update existing record, not create a new one
-    savedRecords[recordIndex].stocks = updatedStocks;
-    savedRecords[recordIndex].totalMain = totalMain;
-    savedRecords[recordIndex].totalSub = totalSub;
-    savedRecords[recordIndex].grandTotal = grandTotal;
+    updateBtn.disabled = true;
 
     try {
-        localStorage.setItem(
-            "shjStockRecords",
-            JSON.stringify(savedRecords)
-        );
+        const { data: authData, error: authError } =
+            await supabaseClient.auth.getUser();
 
-        alert("STOCK RECORD UPDATED SUCCESSFULLY!");
+        if (authError || !authData.user) {
+            throw new Error("Please login first.");
+        }
 
-        // Refresh history with updated data
+        const { data, error } = await supabaseClient
+            .from("stock_records")
+            .update({
+                stocks: updatedStocks,
+                total_main: totalMain,
+                total_sub: totalSub,
+                grand_total: grandTotal
+            })
+            .eq("id", record.id)
+            .select("id");
+
+        if (error) {
+            throw error;
+        }
+
+        if (!data || data.length !== 1) {
+            throw new Error("Record not found or update not permitted.");
+        }
+
+        alert("STOCK RECORD UPDATED IN SUPABASE!");
+
+        const records = await getSupabaseRecords();
         const selectedDate =
             document.getElementById("searchDate").value;
 
-        if (selectedDate) {
-            displaySearchResults(
-                savedRecords.filter(function (item) {
+        displaySearchResults(
+            selectedDate
+                ? records.filter(function (item) {
                     return getRecordDate(item) === selectedDate;
                 })
-            );
-        } else {
-            displaySearchResults(savedRecords);
-        }
+                : records
+        );
 
     } catch (error) {
-        alert("Unable to save updated record.");
-        console.error(error);
+        console.error("Update error:", error);
+        alert("UPDATE FAILED: " + error.message);
+    } finally {
+        updateBtn.disabled = false;
     }
 
 });
@@ -602,9 +788,9 @@ updateBtn.addEventListener("click", function () {
             deleteBtn.style.cursor = "pointer";
 
            
-deleteBtn.addEventListener("click", function () {
 
-    // Confirm before deleting
+deleteBtn.addEventListener("click", async function () {
+
     const confirmDelete = confirm(
         "Are you sure you want to delete this stock record?\n\n" +
         "Date: " + record.dateTime + "\n" +
@@ -616,54 +802,63 @@ deleteBtn.addEventListener("click", function () {
         return;
     }
 
+    deleteBtn.disabled = true;
+
     try {
-        // Load all saved records
-        const savedRecords = JSON.parse(
-            localStorage.getItem("shjStockRecords") || "[]"
-        );
 
-        if (!Array.isArray(savedRecords)) {
-            throw new Error("Invalid stock history data.");
+        // CHECK LOGIN
+        const { data: authData, error: authError } =
+            await supabaseClient.auth.getUser();
+
+        if (authError || !authData.user) {
+            throw new Error("Please login first.");
         }
 
-        // Find the selected record
-        const recordIndex = savedRecords.findIndex(function (item) {
-            return item.id === record.id;
-        });
+        // DELETE RECORD FROM SUPABASE
+        const { data, error } = await supabaseClient
+            .from("stock_records")
+            .delete()
+            .eq("id", record.id)
+            .select("id");
 
-        if (recordIndex === -1) {
-            alert("Record not found.");
-            return;
+        if (error) {
+            throw error;
         }
 
-        // Remove only the selected record
-        savedRecords.splice(recordIndex, 1);
+        if (!data || data.length !== 1) {
+            throw new Error(
+                "Record not found or delete not permitted."
+            );
+        }
 
-        // Save updated history
-        localStorage.setItem(
-            "shjStockRecords",
-            JSON.stringify(savedRecords)
-        );
+        alert("STOCK RECORD DELETED FROM SUPABASE!");
 
-        alert("STOCK RECORD DELETED SUCCESSFULLY!");
+        // REFRESH RECORD LIST
+        const records = await getSupabaseRecords();
 
-        // Refresh history
         const selectedDate =
             document.getElementById("searchDate").value;
 
         if (selectedDate) {
             displaySearchResults(
-                savedRecords.filter(function (item) {
+                records.filter(function (item) {
                     return getRecordDate(item) === selectedDate;
                 })
             );
         } else {
-            displaySearchResults(savedRecords);
+            displaySearchResults(records);
         }
 
+        console.log("Supabase DELETE SUCCESS!");
+
     } catch (error) {
-        console.error("Delete record error:", error);
-        alert("Unable to delete stock record.");
+
+        console.error("Delete error:", error);
+
+        alert("DELETE FAILED: " + error.message);
+
+    } finally {
+        deleteBtn.disabled = false;
     }
 
 });
@@ -709,7 +904,53 @@ deleteBtn.addEventListener("click", function () {
         return `${year}-${month}-${day}`;
     }
 
-    // Search button
+    
+    // =====================================
+    // SEARCH STOCK RECORD - SUPABASE
+    // =====================================
+
+    document.getElementById("searchBtn")
+        .addEventListener("click", async function () {
+
+            const selectedDate =
+                document.getElementById("searchDate").value;
+
+            if (!selectedDate) {
+                alert("Please select a date first.");
+                return;
+            }
+
+            const historyDiv =
+                document.getElementById("stockHistory");
+
+            historyDiv.textContent = "Searching stock records...";
+
+            try {
+
+                const records = await getSupabaseRecords();
+
+                const filtered = records.filter(function (record) {
+                    return getRecordDate(record) === selectedDate;
+                });
+
+                displaySearchResults(filtered);
+
+                console.log(
+                    "Supabase Search SUCCESS!",
+                    filtered.length,
+                    "records found"
+                );
+
+            } catch (error) {
+
+                console.error("Search error:", error);
+
+                historyDiv.textContent =
+                    "Unable to search records: " + error.message;
+            }
+
+        });
+
     document.getElementById("searchBtn")
         .addEventListener("click", function () {
 
@@ -730,14 +971,43 @@ deleteBtn.addEventListener("click", function () {
             displaySearchResults(filtered);
         });
 
-    // Show all records button
+    
+    // =====================================
+    // SHOW ALL RECORDS - SUPABASE
+    // =====================================
+
     document.getElementById("showAllBtn")
-        .addEventListener("click", function () {
+        .addEventListener("click", async function () {
 
             document.getElementById("searchDate").value = "";
 
-            displaySearchResults(getSavedRecords());
+            const historyDiv =
+                document.getElementById("stockHistory");
+
+            historyDiv.textContent = "Loading all stock records...";
+
+            try {
+
+                const records = await getSupabaseRecords();
+
+                displaySearchResults(records);
+
+                console.log(
+                    "Supabase SHOW ALL SUCCESS!",
+                    records.length,
+                    "records loaded"
+                );
+
+            } catch (error) {
+
+                console.error("Show all error:", error);
+
+                historyDiv.textContent =
+                    "Unable to load records: " + error.message;
+            }
+
         });
+
 
     // =====================================
     // INITIAL CALCULATION
