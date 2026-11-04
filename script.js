@@ -586,6 +586,91 @@ updateBtn.addEventListener("click", function () {
 
             card.appendChild(editBtn);
 
+            // DELETE RECORD BUTTON
+            const deleteBtn = document.createElement("button");
+
+            deleteBtn.type = "button";
+            deleteBtn.textContent = "🗑️ DELETE RECORD";
+            deleteBtn.className = "delete-record-btn";
+
+            deleteBtn.style.backgroundColor = "#c62828";
+            deleteBtn.style.color = "white";
+            deleteBtn.style.border = "none";
+            deleteBtn.style.padding = "12px 20px";
+            deleteBtn.style.borderRadius = "8px";
+            deleteBtn.style.marginLeft = "10px";
+            deleteBtn.style.cursor = "pointer";
+
+           
+deleteBtn.addEventListener("click", function () {
+
+    // Confirm before deleting
+    const confirmDelete = confirm(
+        "Are you sure you want to delete this stock record?\n\n" +
+        "Date: " + record.dateTime + "\n" +
+        "Grand Total: " + record.grandTotal + "\n\n" +
+        "This action cannot be undone."
+    );
+
+    if (!confirmDelete) {
+        return;
+    }
+
+    try {
+        // Load all saved records
+        const savedRecords = JSON.parse(
+            localStorage.getItem("shjStockRecords") || "[]"
+        );
+
+        if (!Array.isArray(savedRecords)) {
+            throw new Error("Invalid stock history data.");
+        }
+
+        // Find the selected record
+        const recordIndex = savedRecords.findIndex(function (item) {
+            return item.id === record.id;
+        });
+
+        if (recordIndex === -1) {
+            alert("Record not found.");
+            return;
+        }
+
+        // Remove only the selected record
+        savedRecords.splice(recordIndex, 1);
+
+        // Save updated history
+        localStorage.setItem(
+            "shjStockRecords",
+            JSON.stringify(savedRecords)
+        );
+
+        alert("STOCK RECORD DELETED SUCCESSFULLY!");
+
+        // Refresh history
+        const selectedDate =
+            document.getElementById("searchDate").value;
+
+        if (selectedDate) {
+            displaySearchResults(
+                savedRecords.filter(function (item) {
+                    return getRecordDate(item) === selectedDate;
+                })
+            );
+        } else {
+            displaySearchResults(savedRecords);
+        }
+
+    } catch (error) {
+        console.error("Delete record error:", error);
+        alert("Unable to delete stock record.");
+    }
+
+});
+
+
+            card.appendChild(deleteBtn);
+
             historyDiv.appendChild(card);
         });
     }
