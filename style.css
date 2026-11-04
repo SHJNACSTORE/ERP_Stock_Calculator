@@ -580,3 +580,119 @@ main > h2 {
 #resetBtn:hover {
     background: #b71c1c;
 }
+/* =====================================
+   SHJ AUTO - COMPACT STOCK DASHBOARD
+   ===================================== */
+
+.stock-dashboard {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    max-width: 1400px;
+    margin: 20px auto;
+    align-items: start;
+}
+
+.model-column {
+    min-width: 0;
+}
+
+.model-column h2 {
+    background: #ad392f;
+    color: white;
+    text-align: center;
+    padding: 14px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+/* Responsive layout for mobile */
+@media (max-width: 768px) {
+    .stock-dashboard {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+}
+/* MOBILE COMPACT DASHBOARD */
+@media (max-width: 768px) {
+
+    .stock-dashboard {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin: 12px auto;
+    }
+
+    .model-column h2 {
+        font-size: 20px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .stock-dashboard .stock-card {
+        padding: 12px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+    }
+
+    .stock-dashboard .stock-card h3 {
+        font-size: 15px;
+        margin: 0 0 8px;
+    }
+
+    .stock-dashboard .stock-card label {
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+
+    .stock-dashboard .stock-card input {
+        padding: 8px;
+        font-size: 16px;
+        margin-bottom: 8px;
+        box-sizing: border-box;
+    }
+
+    .stock-dashboard .stock-card h4 {
+        padding: 8px;
+        margin: 4px 0 0;
+        font-size: 13px;
+    }
+}
+/* MOBILE - BEZZA & ARUZ SIDE BY SIDE */
+@media (max-width: 768px) {
+
+    .stock-dashboard {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        width: 100%;
+    }
+
+    .model-column {
+        min-width: 0;
+    }
+
+    .model-column h2 {
+        font-size: 14px;
+        padding: 10px 4px;
+    }
+
+    .stock-dashboard .stock-card {
+        padding: 8px;
+    }
+
+    .stock-dashboard .stock-card h3 {
+        font-size: 12px;
+    }
+
+    .stock-dashboard .stock-card input {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        font-size: 16px;
+        padding: 7px 4px;
+    }
+
+    .stock-dashboard .stock-card h4 {
+        font-size: 12px;
+    }
+}
