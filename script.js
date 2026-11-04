@@ -13,30 +13,22 @@ const supabaseClient = window.supabase.createClient(
 
 console.log("Supabase client initialized successfully!");
 
+   
     // =====================================
-    // CHECK EXISTING LOGIN SESSION
+    // PUBLIC CALCULATOR DISPLAY
     // =====================================
 
-    async function checkLoginSession() {
-        const { data, error } = await supabaseClient.auth.getUser();
+    function showPublicCalculator() {
 
-        const loginSection = document.getElementById("loginSection");
-        const calculatorSection = document.getElementById("calculatorSection");
+        document.getElementById("loginSection").style.display = "none";
 
-        if (!error && data.user) {
-            loginSection.style.display = "none";
-            calculatorSection.style.display = "block";
+        document.getElementById("calculatorSection").style.display = "block";
 
-            console.log("Existing login session found.");
-        } else {
-            loginSection.style.display = "block";
-            calculatorSection.style.display = "none";
-
-            console.log("User not logged in.");
-        }
+        console.log("Public calculator display enabled.");
     }
 
-    checkLoginSession();
+    showPublicCalculator();
+
 
     // =====================================
     // SUPABASE USER LOGOUT
@@ -136,13 +128,7 @@ async function testSupabaseConnection() {
 }
 
 testSupabaseConnection();
-supabaseClient.auth.getUser().then(function ({ data, error }) {
-    if (error || !data.user) {
-        console.log("Authentication Status: NOT LOGGED IN");
-    } else {
-        console.log("Authentication Status: LOGGED IN");
-    }
-});
+
     // =====================================
     // SHJ AUTO STOCK BALANCE CALCULATOR
     // =====================================
@@ -286,13 +272,6 @@ supabaseClient.auth.getUser().then(function ({ data, error }) {
             // SAVE TO SUPABASE
             try {
 
-                const { data: authData, error: authError } =
-                    await supabaseClient.auth.getUser();
-
-                if (authError || !authData.user) {
-                    throw new Error("Please login first.");
-                }
-
                 const { error } = await supabaseClient
                     .from("stock_records")
                     .insert([{
@@ -372,13 +351,7 @@ supabaseClient.auth.getUser().then(function ({ data, error }) {
 
             try {
 
-                const { data: authData, error: authError } =
-                    await supabaseClient.auth.getUser();
-
-                if (authError || !authData.user) {
-                    throw new Error("Please login first.");
-                }
-
+               
                 const { data, error } = await supabaseClient
                     .from("stock_records")
                     .select("*")
@@ -488,13 +461,7 @@ supabaseClient.auth.getUser().then(function ({ data, error }) {
 
     async function getSupabaseRecords() {
 
-        const { data: authData, error: authError } =
-            await supabaseClient.auth.getUser();
-
-        if (authError || !authData.user) {
-            throw new Error("Please login first.");
-        }
-
+      
         const { data, error } = await supabaseClient
             .from("stock_records")
             .select("*")
@@ -693,13 +660,7 @@ updateBtn.addEventListener("click", async function () {
     updateBtn.disabled = true;
 
     try {
-        const { data: authData, error: authError } =
-            await supabaseClient.auth.getUser();
-
-        if (authError || !authData.user) {
-            throw new Error("Please login first.");
-        }
-
+     
         const { data, error } = await supabaseClient
             .from("stock_records")
             .update({
@@ -806,14 +767,7 @@ deleteBtn.addEventListener("click", async function () {
 
     try {
 
-        // CHECK LOGIN
-        const { data: authData, error: authError } =
-            await supabaseClient.auth.getUser();
-
-        if (authError || !authData.user) {
-            throw new Error("Please login first.");
-        }
-
+     
         // DELETE RECORD FROM SUPABASE
         const { data, error } = await supabaseClient
             .from("stock_records")
